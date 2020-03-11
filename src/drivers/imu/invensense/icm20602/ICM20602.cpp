@@ -168,8 +168,8 @@ void ICM20602::Run()
 				ScheduleDelayed(10_ms);
 
 			} else {
-				PX4_DEBUG("Reset not complete, check again in 1 ms");
-				ScheduleDelayed(1_ms);
+				PX4_DEBUG("Reset not complete, check again in 10 ms");
+				ScheduleDelayed(10_ms);
 			}
 		}
 
@@ -195,8 +195,8 @@ void ICM20602::Run()
 
 		} else {
 			PX4_DEBUG("Configure failed, retrying");
-			// try again in 1 ms
-			ScheduleDelayed(1_ms);
+			// try again in 10 ms
+			ScheduleDelayed(10_ms);
 		}
 
 		break;
@@ -443,12 +443,12 @@ bool ICM20602::RegisterCheck(const register_config_t &reg_cfg, bool notify)
 
 	const uint8_t reg_value = RegisterRead(reg_cfg.reg);
 
-	if (reg_cfg.set_bits && !(reg_value & reg_cfg.set_bits)) {
+	if (reg_cfg.set_bits && ((reg_value & reg_cfg.set_bits) != reg_cfg.set_bits)) {
 		PX4_DEBUG("0x%02hhX: 0x%02hhX (0x%02hhX not set)", (uint8_t)reg_cfg.reg, reg_value, reg_cfg.set_bits);
 		success = false;
 	}
 
-	if (reg_cfg.clear_bits && (reg_value & reg_cfg.clear_bits)) {
+	if (reg_cfg.clear_bits && ((reg_value & reg_cfg.clear_bits) != 0)) {
 		PX4_DEBUG("0x%02hhX: 0x%02hhX (0x%02hhX not cleared)", (uint8_t)reg_cfg.reg, reg_value, reg_cfg.clear_bits);
 		success = false;
 	}
