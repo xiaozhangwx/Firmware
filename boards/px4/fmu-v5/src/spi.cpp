@@ -62,3 +62,117 @@ constexpr px4_spi_bus_t px4_spi_buses[SPI_BUS_MAX_BUS_ITEMS] = {
 
 static constexpr bool unused = validateSPIConfig(px4_spi_buses);
 
+#include <lib/drivers/device/spi.h>
+#include <lib/drivers/accelerometer/PX4Accelerometer.hpp>
+
+extern uint8_t s[8 * 1024];
+extern uint8_t d[8 * 1024];
+
+
+class testSPI : public device::SPI
+{
+public:
+
+	/**
+	* Constructor
+	*
+	* @param name    Driver name
+	* @param devname Device node name
+	* @param bus   SPI bus on which the device lives
+	* @param device  Device handle (used by SPI_SELECT)
+	* @param mode    SPI clock/data mode
+	* @param frequency SPI clock frequency
+	*/
+	testSPI(const char *name, const char *devname, int bus, uint32_t device, enum spi_mode_e mode, uint32_t frequency);
+
+	virtual ~testSPI() {};
+
+	int init() { return SPI::init(); }
+
+
+
+	/**
+	 * Perform a SPI transfer.
+	 *
+	 * If called from interrupt context, this interface does not lock
+	 * the bus and may interfere with non-interrupt-context callers.
+	 *
+	 * Clients in a mixed interrupt/non-interrupt configuration must
+	 * ensure appropriate interlocking.
+	 *
+	 * At least one of send or recv must be non-null.
+	 *
+	 * @param send    Bytes to send to the device, or nullptr if
+	 *      no data is to be sent.
+	 * @param recv    Buffer for receiving bytes from the device,
+	 *      or nullptr if no bytes are to be received.
+	 * @param len   Number of bytes to transfer.
+	 * @return    OK if the exchange was successful, -errno
+	 *      otherwise.
+	 */
+	int   transfer(uint8_t *send, uint8_t *recv, unsigned len)
+	{
+		return SPI::transfer(send, recv, len);
+	}
+	uint32_t  get_actual_frequency()
+	{
+		return SPI::get_actual_frequency();
+	}
+
+};
+
+testSPI::testSPI(const char *name, const char *devname, int bus, uint32_t device, enum spi_mode_e mode,
+		 uint32_t frequency) :
+	SPI::SPI(name, devname, bus, device, mode, frequency)
+{
+}
+
+
+extern "C" void do_test(void);
+
+__EXPORT  void do_test(void)
+{
+//  SPI::SPI(const char *name, const char *devname, int bus, uint32_t device, enum spi_mode_e mode, uint32_t frequency) :
+
+	testSPI *spi = new testSPI("test", "/dev/testspi", 5, 0, SPIDEV_MODE3, 20 * 1000 * 1000);
+	spi->init();
+
+//  int   transfer(uint8_t *send, uint8_t *recv, unsigned len);
+	for (uint32_t i = 0; i < sizeof(s); i++) {
+		s[i] = i;
+		d[i] = 0;
+	}
+
+	PROBE(1, 1);
+	PROBE(2, 1);
+	PROBE(3, 1);
+	PROBE(4, 1);
+	PROBE(5, 1);
+	PROBE(6, 1);
+	PROBE(7, 1);
+	PROBE(1, 0);
+	spi->transfer(s, d, 1);
+	spi->transfer(s, d, 2);
+	spi->transfer(s, d, 3);
+	spi->transfer(s, d, 4);
+	spi->transfer(s, d, 5);
+	spi->transfer(s, d, 6);
+	spi->transfer(s, d, 7);
+	spi->transfer(s, d, 8);
+	spi->transfer(s, d, 9);
+	spi->transfer(s, d, 10);
+	spi->transfer(s, d, 16);
+	spi->transfer(s, d, 24);
+	spi->transfer(s, d, 32);
+	spi->transfer(s, d, 48);
+	spi->transfer(s, d, sizeof(s));
+	printf("Autual Frequncy:%ld", spi->get_actual_frequency());
+
+	PROBE(1, 1);
+
+	for (uint32_t i = 0; i < sizeof(s); i++) {
+		s[i] = i;
+		d[i] = 0;
+	}
+
+}

@@ -74,6 +74,8 @@
 #include <px4_platform/board_determine_hw_info.h>
 #include <px4_platform/board_dma_alloc.h>
 
+#include <perf/perf_counter.h>
+
 /****************************************************************************
  * Pre-Processor Definitions
  ****************************************************************************/
@@ -202,6 +204,9 @@ stm32_boardinitialize(void)
  *
  ****************************************************************************/
 
+uint8_t s[8 * 1024];
+uint8_t d[8 * 1024];
+void do_test(void);
 
 __EXPORT int board_app_initialize(uintptr_t arg)
 {
@@ -276,5 +281,47 @@ __EXPORT int board_app_initialize(uintptr_t arg)
 
 #endif /* CONFIG_MMCSD */
 
+	perf_counter_t    cpy;
+
+	cpy = perf_alloc(PC_ELAPSED,  "memcpy");
+
+
+	PROBE_INIT(0x3f);
+	PROBE(1, 0);
+
+	irqstate_t irqstate = px4_enter_critical_section();
+	PROBE(1, 1);
+	perf_begin(cpy);
+	PROBE(1, 0);
+	PROBE(1, 1);
+	perf_end(cpy);
+	PROBE(1, 0);
+	PROBE(1, 1);
+	perf_print_counter(cpy);
+
+	volatile int dloops = 1024;
+
+	while (dloops--) {
+	}
+
+
+	static int loops = 1024;
+	int amt = 0;
+	int inc = 8;
+
+	while (loops--) {
+
+		PROBE(1, 0);
+//      perf_begin(cpy);
+		amt += inc;
+		memcpy(d, s, amt);
+//      perf_end(cpy);
+		PROBE(1, 1);
+	}
+
+	leave_critical_section(irqstate);
+	do_test();
+
+	perf_free(cpy);
 	return OK;
 }
