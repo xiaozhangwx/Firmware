@@ -142,7 +142,8 @@ protected:
 	 * @param frequency	Frequency to set (Hz)
 	 */
 	void		set_frequency(uint32_t frequency) { _frequency = frequency; }
-	uint32_t	get_frequency() { return _frequency; }
+	uint32_t  get_frequency() { return _frequency; }
+	uint32_t  get_actual_frequency() { return _actual; }
 
 	/**
 	 * Set the SPI bus locking mode
@@ -159,6 +160,7 @@ private:
 	enum spi_mode_e		_mode;
 	uint32_t		_frequency;
 	struct spi_dev_s	*_dev;
+	uint32_t _actual;
 
 	LockMode		_locking_mode{LOCK_THREADS};	/**< selected locking mode */
 
