@@ -134,7 +134,7 @@ __EXPORT  void do_test(void)
 {
 //  SPI::SPI(const char *name, const char *devname, int bus, uint32_t device, enum spi_mode_e mode, uint32_t frequency) :
 
-	testSPI *spi = new testSPI("test", "/dev/testspi", 5, 0, SPIDEV_MODE3, 20 * 1000 * 1000);
+	testSPI *spi = new testSPI("test", "/dev/testspi", 1, 0, SPIDEV_MODE3, 20 * 1000 * 1000);
 	spi->init();
 
 //  int   transfer(uint8_t *send, uint8_t *recv, unsigned len);
