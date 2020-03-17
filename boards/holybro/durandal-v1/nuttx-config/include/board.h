@@ -414,6 +414,9 @@
 #define GPIO_SPI6_MOSI   GPIO_SPI6_MOSI_3   /* PB5 */
 #define GPIO_SPI6_SCK    GPIO_SPI6_SCK_1    /* PG13 */
 
+#define DMAMAP_SPI1_RX  DMAMAP_DMA12_SPI1RX_0
+#define DMAMAP_SPI1_TX  DMAMAP_DMA12_SPI1TX_0
+
 /* I2C
  *
  *   Each I2C is associated with a U[S]ART
